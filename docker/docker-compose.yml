@@ -57,8 +57,6 @@ services:
       - "1"
       - --quantization
       - mxfp4
-      - --attention-backend
-      - FLASHINFER
       - --kv-cache-dtype
       - fp8
       - --gpu-memory-utilization
