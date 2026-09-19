@@ -17,6 +17,7 @@ x-vllm-base: &vllm-base
             capabilities: [gpu]
   restart: unless-stopped
 
+services:
   nemotron-lightning:
     <<: *vllm-base
     image: vllm/vllm-openai:v0.27.1
