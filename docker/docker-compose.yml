@@ -57,8 +57,6 @@ services:
       - "1"
       - --quantization
       - mxfp4
-      - --mxfp4-backend
-      - CUTLASS
       - --attention-backend
       - FLASHINFER
       - --kv-cache-dtype
