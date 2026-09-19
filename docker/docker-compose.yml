@@ -42,6 +42,9 @@ services:
     <<: *vllm-base
     image: vllm/vllm-openai:v0.27.1
     container_name: vllm-gpt-oss
+    volumes:
+    - "${HF_CACHE_DIR:-${HOME}/.cache/huggingface/hub}:/root/.cache/huggingface/hub"
+    - ./tiktoken_encodings:/tiktoken_encodings
     ports:
       - "8001:8000"
     environment:
