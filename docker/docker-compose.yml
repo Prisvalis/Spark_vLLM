@@ -64,34 +64,34 @@ services:
       - "1048576"
       - --enforce-eager
 
-  gpt-oss:
-    <<: *vllm-base
-    image: vllm/vllm-openai:v0.27.1
-    container_name: vllm-gpt-oss
-    volumes:
-    - "${HF_CACHE_DIR:-${HOME}/.cache/huggingface/hub}:/root/.cache/huggingface/hub"
-    - ./tiktoken_encodings:/tiktoken_encodings
-    ports:
-      - "8001:8000"
-    environment:
-      - HF_TOKEN=${HF_TOKEN}
-      - VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8=1
-      - TIKTOKEN_ENCODINGS_BASE=/tiktoken_encodings
-    command:
-      - vllm
-      - serve
-      - openai/gpt-oss-120b
-      - --served-model-name
-      - gpt-oss-120b
-      - --tensor-parallel-size
-      - "1"
-      - --quantization
-      - mxfp4
-      - --kv-cache-dtype
-      - fp8
-      - --gpu-memory-utilization
-      - "0.7"
-      - --enforce-eager
+  # gpt-oss:
+  #   <<: *vllm-base
+  #   image: vllm/vllm-openai:v0.27.1
+  #   container_name: vllm-gpt-oss
+  #   volumes:
+  #   - "${HF_CACHE_DIR:-${HOME}/.cache/huggingface/hub}:/root/.cache/huggingface/hub"
+  #   - ./tiktoken_encodings:/tiktoken_encodings
+  #   ports:
+  #     - "8001:8000"
+  #   environment:
+  #     - HF_TOKEN=${HF_TOKEN}
+  #     - VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8=1
+  #     - TIKTOKEN_ENCODINGS_BASE=/tiktoken_encodings
+  #   command:
+  #     - vllm
+  #     - serve
+  #     - openai/gpt-oss-120b
+  #     - --served-model-name
+  #     - gpt-oss-120b
+  #     - --tensor-parallel-size
+  #     - "1"
+  #     - --quantization
+  #     - mxfp4
+  #     - --kv-cache-dtype
+  #     - fp8
+  #     - --gpu-memory-utilization
+  #     - "0.7"
+  #     - --enforce-eager
 
   litellm-db:
     image: postgres:16
