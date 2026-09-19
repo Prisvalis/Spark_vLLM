@@ -60,7 +60,7 @@ services:
       - --kv-cache-dtype
       - fp8
       - --gpu-memory-utilization
-      - "0.5"
+      - "0.7"
       - --enforce-eager
 
   litellm-db:
