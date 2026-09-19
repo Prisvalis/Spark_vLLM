@@ -15,11 +15,30 @@ fi
 echo "Stopping any existing containers..."
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down
 
+TIKTOKEN_DIR="docker/tiktoken_encodings"
+TIKTOKEN_URL="https://openaipublic.blob.core.windows.net/encodings"
+
+# Skip if $1 already exists and is non-empty (a failed `wget -O` leaves an empty file behind).
+# Download to a temp file first so an interrupted download never leaves a broken file in place.
+download_if_missing() {
+  local dest="$1" url="$2" tmp="$1.part"
+  if [[ -s "$dest" ]]; then
+    echo "  $dest already exists, skipping"
+    return 0
+  fi
+  echo "  Downloading $url"
+  if ! wget -O "$tmp" "$url"; then
+    rm -f "$tmp"
+    echo "Failed to download $url" >&2
+    return 1
+  fi
+  mv "$tmp" "$dest"
+}
+
 echo "Download Harmony..."
-cd docker
-mkdir -p tiktoken_encodings
-wget -O tiktoken_encodings/o200k_base.tiktoken "https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken"
-wget -O tiktoken_encodings/cl100k_base.tiktoken "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
+mkdir -p "$TIKTOKEN_DIR"
+download_if_missing "$TIKTOKEN_DIR/o200k_base.tiktoken" "$TIKTOKEN_URL/o200k_base.tiktoken"
+download_if_missing "$TIKTOKEN_DIR/cl100k_base.tiktoken" "$TIKTOKEN_URL/cl100k_base.tiktoken"
 
 echo "Starting Docker environment..."
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
