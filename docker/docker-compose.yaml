@@ -1,0 +1,68 @@
+name: vllm
+
+x-vllm-base: &vllm-base
+  entrypoint: []
+  ipc: host
+  ulimits:
+    memlock: -1
+    stack: 67108864
+  volumes:
+    - /home/admin/.cache/huggingface/hub:/root/.cache/huggingface/hub
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
+  restart: unless-stopped
+
+services:
+  nemotron-lightning:
+    <<: *vllm-base
+    image: vllm/vllm-openai:v0.27.1
+    container_name: vllm-nemotron-lightning
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    command:
+      - vllm
+      - serve
+      - nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4
+      - --served-model-name
+      - nemotron-3.5-lightning
+      - --max-model-len
+      - "131072"
+      - --gpu-memory-utilization
+      - "0.3"
+      - --enforce-eager
+
+  gpt-oss:
+    <<: *vllm-base
+    image: vllm/vllm-openai:v0.27.1
+    container_name: vllm-gpt-oss
+    ports:
+      - "8001:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8=1
+    command:
+      - vllm
+      - serve
+      - openai/gpt-oss-120b
+      - --served-model-name
+      - gpt-oss-120b
+      - --tensor-parallel-size
+      - "1"
+      - --quantization
+      - mxfp4
+      - --mxfp4-backend
+      - CUTLASS
+      - --attention-backend
+      - FLASHINFER
+      - --kv-cache-dtype
+      - fp8
+      - --gpu-memory-utilization
+      - "0.5"
+      - --enforce-eager
