@@ -1,0 +1,11 @@
+model_list:
+  - model_name: nemotron-3.5-lightning
+    litellm_params:
+      model: hosted_vllm/nemotron-3.5-lightning
+      api_base: http://nemotron-lightning:8000/v1
+      api_key: "not-needed"
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: hosted_vllm/gpt-oss-120b
+      api_base: http://gpt-oss:8000/v1
+      api_key: "not-needed"

@@ -7,7 +7,7 @@ x-vllm-base: &vllm-base
     memlock: -1
     stack: 67108864
   volumes:
-    - /home/admin/.cache/huggingface/hub:/root/.cache/huggingface/hub
+    - "${HF_CACHE_DIR:-${HOME}/.cache/huggingface/hub}:/root/.cache/huggingface/hub"
   deploy:
     resources:
       reservations:
@@ -62,3 +62,40 @@ services:
       - --gpu-memory-utilization
       - "0.5"
       - --enforce-eager
+
+  litellm-db:
+    image: postgres:16
+    container_name: litellm-db
+    environment:
+      - POSTGRES_DB=litellm
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=${LITELLM_DB_PASSWORD}
+    volumes:
+      - litellm-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm-router
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - DATABASE_URL=postgresql://litellm:${LITELLM_DB_PASSWORD}@litellm-db:5432/litellm
+      - UI_USERNAME=${LITELLM_UI_USERNAME}
+      - UI_PASSWORD=${LITELLM_UI_PASSWORD}
+    depends_on:
+      litellm-db:
+        condition: service_healthy
+    restart: unless-stopped
+  
+volumes:
+  litellm-db-data:
